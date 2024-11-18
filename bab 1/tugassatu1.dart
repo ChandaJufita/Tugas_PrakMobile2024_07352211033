@@ -1,99 +1,119 @@
-class User {
-  String name;
-  int age;
-  late List<Product> products;
-  Role? role;
-
-  User(this.name, this.age, this.role) {
-    products = [];
-  }
-}
-
+import 'dart:async';
+enum Role { Admin, Customer }
 class Product {
   String productName;
   double price;
   bool inStock;
 
   Product(this.productName, this.price, this.inStock);
+
+  @override
+  String toString() {
+    return '$productName - Rp$price - ${inStock ? "Ada" : "Habis"}';
+  }
 }
 
-enum Role { Admin, Customer }
+abstract class User {
+  String name;
+  int age;
+  late List<Product> _products;
+  Role role;
+
+  User(this.name, this.age, this.role) {
+    _products = [];
+  }
+  List<Product> get products => _products;
+  void showInfo() {
+    print('Nama: $name, Usia: $age, Peran: ${role.name}');
+  }
+}
 
 class AdminUser extends User {
   AdminUser(String name, int age) : super(name, age, Role.Admin);
 
-  void tambahProduk(Product product) {
+  void addProduct(Product product) {
     if (product.inStock) {
-      products.add(product);
-      print("\n===== INFO LAPORAN TAMBAH PRODUK =====");
-      print('${product.productName} berhasil ditambahkan ke daftar produk.');
+      if (!products.any((p) => p.productName == product.productName)) {
+        products.add(product);
+        print('${product.productName} berhasil ditambahkan oleh Admin.');
+      } else {
+        print('${product.productName} sudah ada dalam daftar.');
+      }
     } else {
-      print(
-          '${product.productName} tidak tersedia dalam stok dan tidak dapat ditambahkan.');
+      throw Exception('Produk ${product.productName} tidak ada stok!');
     }
   }
 
-  void hapusProduk(Product product) {
-    products.remove(product);
-    print("\n===== INFO LAPORAN HAPUS PRODUK =====");
-    print('${product.productName} berhasil dihapus dari daftar produk.');
+  void removeProduct(String productName) {
+    products.removeWhere((product) => product.productName == productName);
+    print('$productName berhasil dihapus dari daftar produk.');
   }
 }
 
 class CustomerUser extends User {
   CustomerUser(String name, int age) : super(name, age, Role.Customer);
 
-  void lihatProduk() {
-    print('\nDaftar Produk Tersedia:');
-    for (var product in products) {
-      print('${product.productName} - Rp${product.price} - ${product.inStock ? "Tersedia" : "Habis"}');
+  void viewProducts() {
+    print('\nDAFTAR PRODUK');
+    if (products.isEmpty) {
+      print('Produk tidak tersedia.');
+    } else {
+      for (var product in products) {
+        print(product);
+      }
     }
   }
 }
 
-Future<void> fetchProductDetails() async {
-  print('Mengambil detail produk...');
+Future<List<Product>> fetchProductDetails() async {
+  print('Mengambil detail dari produk');
   await Future.delayed(Duration(seconds: 2));
   print('Detail produk berhasil diambil.');
+  return [
+    Product('iphone', 4000000.0, true),
+    Product('samsung', 2000000.0, true),
+    Product('lenovo', 150000.0, false)
+  ];
 }
 
-void main() {
-  AdminUser admin = AdminUser('Alice', 30);
-  CustomerUser customer = CustomerUser('Bob', 25);
-
-  Product product1 = Product('Laptop', 15000000.0, true);
-  Product product2 = Product('Handphone1', 8000000.0, false);
-  Product product3 = Product('Handphone2', 8000000.0, true);
+void main() async {
+  // Membuat objek Admin dan Customer
+  AdminUser admin = AdminUser('Chanda', 19);
+  CustomerUser customer = CustomerUser('Jufita', 19);
 
   try {
-    admin.tambahProduk(product1);
-    admin.hapusProduk(product2);
-    admin.tambahProduk(product3);
+    admin.addProduct(Product('Sepatu', 200000.0, true));
+    admin.addProduct(Product('Baju', 250000.0, true));
+    admin.addProduct(Product('Tas', 450000.0, false));
   } on Exception catch (e) {
-    print('Kesalahan: $e');
+    print('Error pada bagian: $e');
+  }
+  admin.showInfo();
+  customer.showInfo();
+  customer.products.addAll(admin.products);
+  customer.viewProducts();
+  List<Product> additionalProducts = await fetchProductDetails();
+  for (var product in additionalProducts) {
+    try {
+      admin.addProduct(product);
+    } on Exception catch (e) {
+      print('Error pada bagian: $e');
+    }
   }
 
-  customer.lihatProduk();
-
-  // Pengambilan data produk secara asinkron
-  fetchProductDetails();
-
-  // Koleksi - Menggunakan Map dan Set
+  customer.products.clear();
+  customer.products.addAll(admin.products);
+  customer.viewProducts();
   Map<String, Product> productMap = {
-    product1.productName: product1,
-    product2.productName: product2,
-    product3.productName: product3,
+    for (var product in admin.products) product.productName: product
   };
-
+  print('\nDaftar Produk Di Map');
   productMap.forEach((key, value) {
-    print('${key} - Harga: Rp${value.price} - Stok: ${value.inStock ? "Tersedia" : "Habis"}');
+    print('$key - $value');
   });
-
-
-  Set<Product> productSet = {product1, product2, product3};
-  print('\nDaftar Produk dari Set:');
-  productSet.forEach((product) {
-    print('${product.productName} - Harga: Rp${product.price} - Stok: ${product.inStock ? "Tersedia" : "Habis"}');
+  Set<Product> uniqueProducts = {...admin.products};
+  print('\nDafatar Produk Unik');
+  uniqueProducts.forEach((product) {
+    print(product);
   });
-
 }
