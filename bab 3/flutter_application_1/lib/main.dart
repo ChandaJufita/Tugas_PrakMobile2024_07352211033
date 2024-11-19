@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/screens/bab4.dart';
 
 void main() {
   runApp(const ECommerceApp());
@@ -57,9 +58,12 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             child: IconButton(
-              icon: const Icon(Icons.shopping_cart, color: Colors.black),
-              onPressed: () {
-                // Aksi untuk keranjang belanja
+              icon:Icon(Icons.shopping_cart, color: Colors.black),
+                onPressed: () {
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(builder: (context) => Bab4()),
+                    );// Aksi untuk keranjang belanja
               },
             ),
           ),
