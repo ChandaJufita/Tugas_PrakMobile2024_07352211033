@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'author': 'kyla',
       'time': '11:00 AM',
     },
-  ];
+  ]; 
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
-      const Center(child: Text('Explore Page')),
+      const Center(child: Text('HalamaanExplore')),
       const Center(child: Text('Bookmark Page')),
       EditProfileScreen(),
     ];
